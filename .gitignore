@@ -1,0 +1,12 @@
+# gradle
+.gradle
+build/
+out/
+dist/
+lib/
+*.tmp
+tmp/
+
+# idea
+*.iml
+.idea/
