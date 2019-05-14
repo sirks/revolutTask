@@ -1,0 +1,10 @@
+#  https://www.dropwizard.io/1.0.2/docs/manual/configuration.html
+
+server:
+  rootPath: /api
+  applicationConnectors:
+    - type: http
+      port: 8000
+  adminConnectors:
+    - type: http
+      port: 8001

@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 
 import static java.math.BigDecimal.ZERO;
 
-public class Account {
+public class Account{
     private final Iban iban;
     private Currency currency;
     private BigDecimal amount;

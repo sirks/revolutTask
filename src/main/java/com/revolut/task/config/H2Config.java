@@ -1,44 +1,35 @@
 package com.revolut.task.config;
 
+import com.google.inject.Singleton;
+import com.google.inject.Stage;
 import org.h2.jdbcx.JdbcConnectionPool;
+import org.jooq.Configuration;
+import org.jooq.DSLContext;
+import org.jooq.Queries;
+import org.jooq.impl.DSL;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.Optional;
-import java.util.logging.Logger;
+import static com.revolut.task.DefaultSchema.DEFAULT_SCHEMA;
+import static org.jooq.SQLDialect.H2;
 
+@Singleton
 public class H2Config {
-    private static final Logger LOG = Logger.getLogger("H2Config");
-    private static final String CONNECTION = "jdbc:h2:mem:";
+    private static final String URL = "jdbc:h2:mem:";
+    public final Configuration configuration;
 
-    private static JdbcConnectionPool connectionPool = connectionPool();
+    public H2Config() {
+        System.out.println("building dbConfig");
+        JdbcConnectionPool connectionPool = JdbcConnectionPool.create(URL, "", "");
+        connectionPool.setMaxConnections(5);
+        DSLContext dslContext = DSL.using(connectionPool, H2);
+        createSchema(dslContext);
 
-    private static JdbcConnectionPool connectionPool() {
-        JdbcConnectionPool pool = JdbcConnectionPool.create(CONNECTION, "", "");
-        pool.setMaxConnections(5);
-        return pool;
+        this.configuration = dslContext.configuration();
     }
 
-    public static Optional<Connection> connection() {
-        try {
-            return Optional.of(connectionPool.getConnection());
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return Optional.empty();
-        }
-    }
-
-    public static void main(String[] args) {
-        Optional<Connection> connection = connection();
-        connection.ifPresent(c -> {
-            try {
-                LOG.info("closing connection");
-                c.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        });
-        connectionPool.dispose();
+    private void createSchema(DSLContext dslContext) {
+        DEFAULT_SCHEMA.tableStream()
+                .map(dslContext::ddl)
+                .flatMap(Queries::queryStream)
+                .forEach(dslContext::execute);
     }
 }
