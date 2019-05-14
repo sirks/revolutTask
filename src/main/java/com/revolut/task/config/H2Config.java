@@ -1,7 +1,6 @@
 package com.revolut.task.config;
 
 import com.google.inject.Singleton;
-import com.google.inject.Stage;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.jooq.Configuration;
 import org.jooq.DSLContext;
@@ -22,7 +21,6 @@ public class H2Config {
         connectionPool.setMaxConnections(5);
         DSLContext dslContext = DSL.using(connectionPool, H2);
         createSchema(dslContext);
-
         this.configuration = dslContext.configuration();
     }
 

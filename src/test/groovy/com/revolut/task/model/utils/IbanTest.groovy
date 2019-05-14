@@ -1,5 +1,6 @@
 package com.revolut.task.model.utils
 
+
 import spock.lang.Specification
 
 class IbanTest extends Specification {

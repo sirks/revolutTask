@@ -1,7 +1,7 @@
 package com.revolut.task.model
 
 import com.revolut.task.model.utils.Currency
-import com.revolut.task.model.utils.Iban
+
 import spock.lang.Specification
 
 class TransactionTest extends Specification {
