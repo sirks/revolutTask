@@ -3,7 +3,6 @@ CREATE TABLE ACCOUNT
     ID       INT PRIMARY KEY AUTO_INCREMENT,
     IBAN     VARCHAR(28)                                   NOT NULL,
     UNIQUE (IBAN),
-    CURRENCY ENUM ('EUR', 'GBP', 'USD', 'BTC')             NOT NULL,
     BALANCE  DECIMAL(11, 2) DEFAULT 0 CHECK (BALANCE >= 0) NOT NULL
 );
 

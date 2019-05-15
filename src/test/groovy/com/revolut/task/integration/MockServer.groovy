@@ -5,7 +5,7 @@ import org.eclipse.jetty.server.Server
 
 class MockServer {
 
-    static final int PORT = 8080
+    static final int PORT = 9000
     static final String HOST = "http://localhost"
 
     static Server server

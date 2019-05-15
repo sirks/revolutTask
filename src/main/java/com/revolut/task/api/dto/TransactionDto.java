@@ -14,6 +14,12 @@ public class TransactionDto extends Dto {
     public TransactionDto() {
     }
 
+    public TransactionDto(BigDecimal amount, Integer fromAccountId, Integer toAccountId) {
+        this.amount = amount;
+        this.fromAccountId = fromAccountId;
+        this.toAccountId = toAccountId;
+    }
+
     public TransactionDto(Transaction transaction) {
         id = transaction.getId();
         amount = transaction.getAmount();

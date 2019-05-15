@@ -5,6 +5,8 @@ import com.sun.jersey.api.client.Client
 import com.sun.jersey.api.client.ClientResponse
 import com.sun.jersey.api.client.WebResource
 
+import java.util.concurrent.CompletableFuture
+
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE
 
 abstract class WsHelper {
@@ -19,16 +21,20 @@ abstract class WsHelper {
         client.destroy()
     }
 
-    def <T> T post(String url, Object body, Class<T> returnType) {
-        WebResource webResource = client.resource(url)
-        ClientResponse clientResponse = webResource.type(APPLICATION_JSON_TYPE).post(ClientResponse.class, body)
-        getBody(clientResponse, returnType)
+    def <T> CompletableFuture<T> post(String url, Object body, Class<T> returnType) {
+        CompletableFuture.supplyAsync({ ->
+            WebResource webResource = client.resource(url)
+            ClientResponse clientResponse = webResource.type(APPLICATION_JSON_TYPE).post(ClientResponse.class, body)
+            getBody(clientResponse, returnType)
+        })
     }
 
-    def <T> T get(String url, Class<T> returnType){
-        WebResource webResource = client.resource(url)
-        ClientResponse clientResponse = webResource.type(APPLICATION_JSON_TYPE).get(ClientResponse.class)
-        getBody(clientResponse, returnType)
+    def <T> CompletableFuture<T> get(String url, Class<T> returnType) {
+        CompletableFuture.supplyAsync({ ->
+            WebResource webResource = client.resource(url)
+            ClientResponse clientResponse = webResource.type(APPLICATION_JSON_TYPE).get(ClientResponse.class)
+            getBody(clientResponse, returnType)
+        })
     }
 
     static <T> T getBody(ClientResponse clientResponse, Class<T> returnType) {

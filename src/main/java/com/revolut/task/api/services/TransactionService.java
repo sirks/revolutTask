@@ -10,8 +10,11 @@ import com.revolut.task.tables.pojos.Account;
 import com.revolut.task.tables.pojos.Transaction;
 
 import java.math.BigDecimal;
+import java.util.Iterator;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 import static java.lang.String.format;
 
@@ -36,11 +39,22 @@ public class TransactionService {
     }
 
     public Integer create(TransactionDto transaction) {
-        //TODO make this atomic. figure out jooq transactions and locking
-        //does not work with daos, have to go all sql... nice...
+        /** TODO make this atomic. figure out jooq transactions and locking
+         ** transactions doesn't work with jooq daos. have to go all sql... nice...
+         ** jooq generated daos does not support async methods... so 2010...
+         **/
+
         validate(transaction);
-        Account fromAccount = accountDao.fetchOneById(transaction.fromAccountId);
-        Account toAccount = accountDao.fetchOneById(transaction.toAccountId);
+
+        Iterator<Account> accounts = Stream.of(
+                CompletableFuture.supplyAsync(() -> accountDao.fetchOneById(transaction.fromAccountId)),
+                CompletableFuture.supplyAsync(() -> accountDao.fetchOneById(transaction.toAccountId))
+        )
+                .map(CompletableFuture::join)
+                .iterator();
+
+        Account fromAccount = accounts.next();
+        Account toAccount = accounts.next();
         validate(transaction, fromAccount, toAccount);
 
         Transaction pojo = transaction.pojo();
@@ -49,8 +63,11 @@ public class TransactionService {
         transactionDao.insert(pojo);
         fromAccount.setBalance(fromAccount.getBalance().subtract(pojo.getAmount()));
         toAccount.setBalance(toAccount.getBalance().add(pojo.getAmount()));
-        accountDao.update(fromAccount);
-        accountDao.update(toAccount);
+
+        CompletableFuture.allOf(
+                CompletableFuture.runAsync(() -> accountDao.update(fromAccount)),
+                CompletableFuture.runAsync(() -> accountDao.update(toAccount))
+        ).join();
         return pojo.getId();
     }
 
@@ -65,8 +82,8 @@ public class TransactionService {
     private void validate(TransactionDto transaction, Account fromAccount, Account toAccount) {
         if (
                 fromAccount == null ||
-                toAccount == null ||
-                notEnoughBalance(transaction, fromAccount)
+                        toAccount == null ||
+                        notEnoughBalance(transaction, fromAccount)
         ) {
             String message = format("incorrect transaction or accounts %s,%s,%s", transaction, fromAccount, toAccount);
             LOG.warning(message);
