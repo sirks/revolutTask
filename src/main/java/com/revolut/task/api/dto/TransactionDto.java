@@ -28,7 +28,7 @@ public class TransactionDto extends Dto {
 
     @Override
     public String toString() {
-        return "TransactionDto{" +
+        return "Transaction{" +
                 "amount=" + amount +
                 ", fromAccountId=" + fromAccountId +
                 ", toAccountId=" + toAccountId +

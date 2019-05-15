@@ -10,10 +10,9 @@ import org.jooq.impl.DSL;
 import static com.revolut.task.DefaultSchema.DEFAULT_SCHEMA;
 import static org.jooq.SQLDialect.H2;
 
-@Singleton
-public class H2Config {
+public class H2Config implements DbConfig{
     private static final String URL = "jdbc:h2:mem:";
-    public final Configuration configuration;
+    private final Configuration configuration;
 
     public H2Config() {
         System.out.println("building dbConfig");
@@ -29,5 +28,10 @@ public class H2Config {
                 .map(dslContext::ddl)
                 .flatMap(Queries::queryStream)
                 .forEach(dslContext::execute);
+    }
+
+    @Override
+    public Configuration configuration() {
+        return configuration;
     }
 }
