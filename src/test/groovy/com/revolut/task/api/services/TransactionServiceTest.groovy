@@ -118,5 +118,8 @@ class TransactionServiceTest extends Specification {
 //        then:
         1 * accountDao.update(fromAccount)
         1 * accountDao.update(toAccount)
+
+//        then:
+//        0 * _
     }
 }

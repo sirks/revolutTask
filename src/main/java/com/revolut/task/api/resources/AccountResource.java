@@ -17,7 +17,7 @@ public class AccountResource {
 
     @GET
     @Path("/{accountId}")
-    public AccountDto getById(@PathParam("accountId") Integer accountId) {
+    public AccountDto getBy(@PathParam("accountId") Integer accountId) {
         return accountService.getById(accountId).orElseThrow(NotFoundException::new);
     }
 

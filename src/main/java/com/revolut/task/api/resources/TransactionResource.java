@@ -17,7 +17,7 @@ public class TransactionResource {
 
     @GET
     @Path("/{transactionId}")
-    public TransactionDto getById(@PathParam("transactionId") Integer transactionId) {
+    public TransactionDto getBy(@PathParam("transactionId") Integer transactionId) {
         return transactionService.getById(transactionId).orElseThrow(NotFoundException::new);
     }
 

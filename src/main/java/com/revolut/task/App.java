@@ -9,17 +9,22 @@ import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 
 public class App {
+
     public static void main(String[] args) throws Exception {
+        Server server = initServer(8080);
+        server.join();
+    }
+
+    public static Server initServer(int port) throws Exception {
         Guice.createInjector(new GuiceServletModule());
 
-        Server server = new Server(8080);
+        Server server = new Server(port);
         ServletContextHandler servletHandler = new ServletContextHandler();
         servletHandler.addFilter(GuiceFilter.class, "/*", null);
         servletHandler.addServlet(DefaultServlet.class, "/");
         server.setHandler(servletHandler);
         server.start();
-        server.join();
-
+        return server;
     }
 
 }
