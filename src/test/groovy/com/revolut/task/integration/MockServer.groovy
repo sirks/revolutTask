@@ -2,11 +2,12 @@ package com.revolut.task.integration
 
 import com.revolut.task.App
 import org.eclipse.jetty.server.Server
+import org.eclipse.jetty.server.ServerConnector
 
 class MockServer {
 
-    static final int PORT = 9000
     static final String HOST = "http://localhost"
+    static final int PORT = 9000
 
     static Server server
 
@@ -14,13 +15,8 @@ class MockServer {
         if (server) {
             return
         }
-        server = App.initServer(PORT)
-    }
-
-    static def stop() {
-        if (server) {
-            server.stop()
-        }
-        server = null
+        server = App.initServer()
+        ((ServerConnector) server.connectors[0]).setPort(PORT)
+        server.start()
     }
 }

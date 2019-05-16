@@ -1,6 +1,8 @@
 package com.revolut.task.config;
 
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.jooq.Configuration;
 import org.jooq.DSLContext;
@@ -11,13 +13,17 @@ import static com.revolut.task.DefaultSchema.DEFAULT_SCHEMA;
 import static org.jooq.SQLDialect.H2;
 
 @Singleton
-public class H2Config implements DbConfig{
-    private static final String URL = "jdbc:h2:mem:revolut";
+public class H2Config implements DbConfig {
+//    private static final String URL = "jdbc:h2:mem:revolut";
     private final Configuration configuration;
 
-    public H2Config() {
-        System.out.println("building dbConfig");
-        JdbcConnectionPool connectionPool = JdbcConnectionPool.create(URL, "", "");
+    @Inject
+    public H2Config(
+            @Named("db.url") String url,
+            @Named("db.username") String username,
+            @Named("db.password") String password
+    ) {
+        JdbcConnectionPool connectionPool = JdbcConnectionPool.create(url, username, password);
         connectionPool.setMaxConnections(5);
         DSLContext dslContext = DSL.using(connectionPool, H2);
         createSchema(dslContext);
