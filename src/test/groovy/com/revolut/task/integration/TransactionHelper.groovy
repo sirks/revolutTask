@@ -6,10 +6,10 @@ class TransactionHelper extends WsHelper {
     final def TRANSACTION_URL = ROOT + "transactions"
 
     def create(TransactionDto transaction) {
-        post(TRANSACTION_URL, transaction, Integer)
+        post(TRANSACTION_URL, transaction, String)
     }
 
-    def getBy(Integer id) {
+    def getBy(String id) {
         get(TRANSACTION_URL + "/" + id, TransactionDto)
     }
 

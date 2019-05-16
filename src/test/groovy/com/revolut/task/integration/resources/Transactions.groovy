@@ -11,6 +11,7 @@ import spock.lang.Specification
 
 import java.util.stream.Stream
 
+import static java.lang.Integer.valueOf
 import static java.math.BigDecimal.ONE
 import static java.math.BigDecimal.ZERO
 
@@ -46,7 +47,7 @@ class Transactions extends Specification {
         def fromAccountId = accountIds.next()
         def toAccountId = accountIds.next()
 
-        def transaction = new TransactionDto(transactionAmount, fromAccountId, toAccountId)
+        def transaction = new TransactionDto(transactionAmount, valueOf(fromAccountId), valueOf(toAccountId))
         def returnTransaction = transactionHelper.create(transaction)
                 .thenComposeAsync({ transactionId -> transactionHelper.getBy(transactionId) })
                 .get()
@@ -81,7 +82,7 @@ class Transactions extends Specification {
         def fromAccountId = accountIds.next()
         def toAccountId = accountIds.next()
 
-        def transaction = new TransactionDto(transactionAmount, fromAccountId, toAccountId)
+        def transaction = new TransactionDto(transactionAmount, valueOf(fromAccountId), valueOf(toAccountId))
         def transactionId = transactionHelper.create(transaction).get()
 
         def returnFromAccountFuture = accountHelper.getBy(fromAccountId)
@@ -119,7 +120,7 @@ class Transactions extends Specification {
         def toAccountId = accountIds.next()
 
 //        create 2 concurrent transactions
-        def transaction = new TransactionDto(transactionAmount, fromAccountId, toAccountId)
+        def transaction = new TransactionDto(transactionAmount, valueOf(fromAccountId), valueOf(toAccountId))
         def transaction1Future = transactionHelper.create(transaction)
         def transaction2Future = transactionHelper.create(transaction)
         def transactionIds = Stream.of(transaction1Future, transaction2Future)

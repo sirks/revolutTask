@@ -12,10 +12,10 @@ class AccountHelper extends WsHelper {
     final def ACCOUNT_URL = ROOT + "accounts"
 
     def create(AccountDto account) {
-        post(ACCOUNT_URL, account, Integer)
+        post(ACCOUNT_URL, account, String)
     }
 
-    def getBy(Integer id) {
+    def getBy(String id) {
         get(ACCOUNT_URL + "/" + id, AccountDto)
     }
 

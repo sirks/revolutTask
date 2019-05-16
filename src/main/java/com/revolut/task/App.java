@@ -1,6 +1,5 @@
 package com.revolut.task;
 
-
 import com.google.inject.Guice;
 import com.google.inject.servlet.GuiceFilter;
 import com.revolut.task.config.GuiceServletModule;
@@ -17,7 +16,6 @@ public class App {
 
     public static Server initServer(int port) throws Exception {
         Guice.createInjector(new GuiceServletModule());
-
         Server server = new Server(port);
         ServletContextHandler servletHandler = new ServletContextHandler();
         servletHandler.addFilter(GuiceFilter.class, "/*", null);

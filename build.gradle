@@ -1,13 +1,13 @@
 plugins {
     id 'nu.studer.jooq' version '3.0.3'
+    id "com.github.johnrengelman.shadow" version "4.0.2"
+    id "java"
+    id "groovy"
 }
 
 group 'com.revolut'
 version '1.0-SNAPSHOT'
 
-
-apply plugin: 'java'
-apply plugin: 'groovy'
 
 sourceCompatibility = 11.0
 
@@ -65,4 +65,12 @@ jooq {
     }
 }
 
-project.tasks.getByName('compileJava').dependsOn -= 'generateDdlJooqSchemaSource'
+jar {
+    manifest {
+        attributes "Main-Class": "com.revolut.task.App"
+    }
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+}
+
+//project.tasks.getByName('compileJava').dependsOn -= 'generateDdlJooqSchemaSource'
+tasks.build.dependsOn tasks.shadowJar

@@ -23,6 +23,7 @@ public class TransactionResource {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.TEXT_PLAIN)
     public String create(TransactionDto account) {
         return transactionService.create(account).toString();
     }
