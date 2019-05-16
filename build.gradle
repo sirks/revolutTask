@@ -1,12 +1,12 @@
 plugins {
-    id 'nu.studer.jooq' version '3.0.3'
+    id "nu.studer.jooq" version "3.0.3"
     id "com.github.johnrengelman.shadow" version "4.0.2"
     id "java"
     id "groovy"
 }
 
-group 'com.revolut'
-version '1.0-SNAPSHOT'
+group "com.revolut"
+version "1.0-SNAPSHOT"
 
 
 sourceCompatibility = 11.0
@@ -15,43 +15,48 @@ repositories {
     mavenCentral()
 }
 
+ext {
+    jooqVersion = "3.11.11"
+    jettyVersion = "9.4.18.v20190429"
+    h2Version = "1.4.199"
+}
+
 dependencies {
 //    ORM
-    compile 'org.jooq:jooq:3.11.11'
+    compile "org.jooq:jooq:$jooqVersion"
 //    DB
-    compile 'com.h2database:h2:1.4.199'
+    compile "com.h2database:h2:$h2Version"
 //    WEB
-    compile 'org.eclipse.jetty:jetty-server:9.4.18.v20190429'
-    compile 'org.eclipse.jetty:jetty-servlet:9.4.18.v20190429'
-    compile 'com.sun.jersey.contribs:jersey-guice:1.19.4'
-    compile 'com.sun.xml.bind:jaxb-core:2.3.0.1'
-    compile 'javax.xml.bind:jaxb-api:2.3.1'
-    compile 'com.sun.xml.bind:jaxb-impl:2.3.1'
-    compile 'com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.9.8'
+    compile "org.eclipse.jetty:jetty-server:$jettyVersion"
+    compile "org.eclipse.jetty:jetty-servlet:$jettyVersion"
+    compile "com.sun.jersey.contribs:jersey-guice:1.19.4"
+    compile "com.sun.xml.bind:jaxb-core:2.3.0.1"
+    compile "javax.xml.bind:jaxb-api:2.3.1"
+    compile "com.sun.xml.bind:jaxb-impl:2.3.1"
+    compile "com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.9.8"
 //    SWAGGER
-//    compile 'io.swagger:swagger-jersey2-jaxrs:1.5.22'
+//    compile "io.swagger:swagger-jersey2-jaxrs:1.5.22"
 
-    testCompile 'org.spockframework:spock-core:1.3-groovy-2.5'
-//    testCompile 'org.eclipse.jetty:jetty-client:9.4.18.v20190429'
+    testCompile "org.spockframework:spock-core:1.3-groovy-2.5"
     testCompile 'com.sun.jersey:jersey-client:1.19.4'
 
-    jooqRuntime 'org.jooq:jooq-meta-extensions:3.11.11'
+    jooqRuntime "org.jooq:jooq-meta-extensions:$jooqVersion"
 }
 
 jooq {
-    version = '3.11.11'
-    edition = 'OSS'
+    version = "$jooqVersion"
+    edition = "OSS"
     ddl(sourceSets.main) {
         generator {
             database {
-                name = 'org.jooq.meta.extensions.ddl.DDLDatabase'
+                name = "org.jooq.meta.extensions.ddl.DDLDatabase"
                 properties {
                     property {
-                        key = 'scripts'
-                        value = 'src/main/resources/ddl.sql'
+                        key = "scripts"
+                        value = "src/main/resources/ddl.sql"
                     }
                 }
-                inputSchema = 'PUBLIC'
+                inputSchema = "PUBLIC"
                 outputSchemaToDefault = true
             }
             generate {
@@ -59,7 +64,7 @@ jooq {
                 daos = true
             }
             target {
-                packageName = 'com.revolut.task'
+                packageName = "com.revolut.task"
             }
         }
     }
@@ -75,5 +80,5 @@ shadowJar {
     mergeServiceFiles()
 }
 
-//project.tasks.getByName('compileJava').dependsOn -= 'generateDdlJooqSchemaSource'
+//project.tasks.getByName("compileJava").dependsOn -= "generateDdlJooqSchemaSource"
 tasks.build.dependsOn tasks.shadowJar
