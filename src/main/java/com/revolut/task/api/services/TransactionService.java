@@ -39,7 +39,7 @@ public class TransactionService {
     }
 
     public Integer create(TransactionDto transaction) {
-        /** TODO make this atomic. Probably should use some streaming service like kafka.
+        /** TODO make this atomic. Probably should use some message queue or streaming service like kafka.
          ** jooq transactions doesn't work with jooq daos. have to go all sql... nice...
          ** jooq generated daos does not support async methods... so 2010...
          **/
