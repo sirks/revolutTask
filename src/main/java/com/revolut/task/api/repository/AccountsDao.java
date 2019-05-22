@@ -22,14 +22,14 @@ public class AccountsDao implements Accounts{
     }
 
     @Override
-    public Integer create(Account pojo) {
-        dao.insert(pojo);
-        return pojo.getId();
+    public Optional<Account> getByIban(String iban) {
+        return Optional.ofNullable(dao.fetchOneByIban(iban));
     }
 
     @Override
-    public Optional<Account> getByIban(String iban) {
-        return Optional.ofNullable(dao.fetchOneByIban(iban));
+    public Integer create(Account pojo) {
+        dao.insert(pojo);
+        return pojo.getId();
     }
 
     @Override
