@@ -99,7 +99,7 @@ class Transactions extends Specification {
     }
 
 
-    def "should fill all competing concurrent transaction"() {
+    def "should execute concurrent transaction"() {
         given:
         def transactionAmount = BigDecimal.valueOf(10)
         def accountInitialBalance = BigDecimal.valueOf(20)

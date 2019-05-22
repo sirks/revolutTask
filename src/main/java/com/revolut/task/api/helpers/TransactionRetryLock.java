@@ -1,4 +1,4 @@
-package com.revolut.task.api.services;
+package com.revolut.task.api.helpers;
 
 import com.google.inject.Singleton;
 import com.revolut.task.api.dto.TransactionDto;
@@ -11,12 +11,12 @@ import java.util.stream.Stream;
 import static java.lang.String.format;
 
 @Singleton
-public class TransactionLock {
-    private final static Logger LOG = Logger.getLogger("TransactionLock");
+public class TransactionRetryLock implements TransactionLock {
+    private final static Logger LOG = Logger.getLogger("TransactionRetryLock");
 
     private final Set<Integer> currentTransactions;
 
-    public TransactionLock() {
+    public TransactionRetryLock() {
         this.currentTransactions = new HashSet<>();
     }
 

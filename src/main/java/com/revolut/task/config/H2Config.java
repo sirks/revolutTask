@@ -1,6 +1,7 @@
 package com.revolut.task.config;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import org.h2.jdbcx.JdbcConnectionPool;
@@ -12,8 +13,7 @@ import org.jooq.impl.DSL;
 import static com.revolut.task.DefaultSchema.DEFAULT_SCHEMA;
 import static org.jooq.SQLDialect.H2;
 
-@Singleton
-public class H2Config implements DbConfig {
+public class H2Config implements Provider<Configuration> {
     private final Configuration configuration;
 
     @Inject
@@ -37,7 +37,7 @@ public class H2Config implements DbConfig {
     }
 
     @Override
-    public Configuration configuration() {
+    public Configuration get() {
         return configuration;
     }
 }

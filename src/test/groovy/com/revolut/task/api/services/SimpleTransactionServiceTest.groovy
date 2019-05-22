@@ -1,18 +1,18 @@
 package com.revolut.task.api.services
 
 import com.revolut.task.api.dto.TransactionDto
-import com.revolut.task.config.DbConfig
-import com.revolut.task.tables.daos.AccountDao
-import com.revolut.task.tables.daos.TransactionDao
+import com.revolut.task.api.helpers.TransactionLock
+import com.revolut.task.api.repository.Accounts
+import com.revolut.task.api.repository.Transactions
 import com.revolut.task.tables.pojos.Account
 import com.revolut.task.tables.pojos.Transaction
 import spock.lang.Specification
 
-class TransactionServiceTest extends Specification {
+class SimpleTransactionServiceTest extends Specification {
     TransactionLock transactionLock = Mock()
-    TransactionDao transactionDao = Mock()
-    AccountDao accountDao = Mock()
-    TransactionService subject = new TransactionService(transactionLock, Mock(DbConfig), transactionDao, accountDao)
+    Transactions transactions = Mock()
+    Accounts accounts = Mock()
+    TransactionService subject = new SimpleTransactionService(transactionLock, transactions, accounts)
     TransactionDto transactionDto
 
     void setup() {
@@ -24,26 +24,28 @@ class TransactionServiceTest extends Specification {
 
     def "should return empty optional if not found"() {
         when:
-        transactionDao.fetchOneById(_) >> null
+        transactions.getById(_) >> Optional.empty()
 
         then:
         subject.getById(1).equals(Optional.empty())
     }
 
     def "should return transactiondto if found"() {
-        when:
+        given:
         int id = 1
         Transaction transaction = Mock()
         transaction.getId() >> id
-        transactionDao.fetchOneById(_) >> transaction
+        transactions.getById(_) >> Optional.of(transaction)
 
-        then:
+        expect:
         subject.getById(id).get().id == id
     }
 
     def "should not send money to same account"() {
-        when:
+        given:
         transactionDto.toAccountId = transactionDto.fromAccountId
+
+        when:
         subject.create(transactionDto)
 
         then:
@@ -52,8 +54,10 @@ class TransactionServiceTest extends Specification {
     }
 
     def "should not allow non positive amount"() {
-        when:
+        given:
         transactionDto.amount = amount
+
+        when:
         subject.create(transactionDto)
 
         then:
@@ -66,8 +70,10 @@ class TransactionServiceTest extends Specification {
     }
 
     def "should fail if accounts not found"() {
+        given:
+        accounts.getById(transactionDto.fromAccountId) >> Optional.empty()
+
         when:
-        accountDao.fetchOneById(transactionDto.fromAccountId) >> null
         subject.create(transactionDto)
 
         then:
@@ -86,14 +92,14 @@ class TransactionServiceTest extends Specification {
     }
 
     def "should fail on not enough balance"() {
-        when:
+        given:
         transactionDto.amount = 99
-
         Account fromAccount = Mock()
         fromAccount.getBalance() >> transactionDto.amount - 1
 
-        accountDao.fetchOneById(transactionDto.fromAccountId) >> fromAccount
-        accountDao.fetchOneById(transactionDto.toAccountId) >> Mock(Account)
+        accounts.getById(transactionDto.fromAccountId) >> Optional.of(fromAccount)
+
+        when:
         subject.create(transactionDto)
 
         then:
@@ -114,22 +120,22 @@ class TransactionServiceTest extends Specification {
         toAccount.getBalance() >> toAccountBalance
         Transaction transactionPojo = Mock()
         transactionPojo.getAmount() >> transactionDto.amount
+        transactionDto.pojo() >> transactionPojo
+        accounts.getById(transactionDto.fromAccountId) >> Optional.of(fromAccount)
+        accounts.getById(transactionDto.toAccountId) >> Optional.of(toAccount)
 
         when:
-        transactionDto.pojo() >> transactionPojo
-        accountDao.fetchOneById(transactionDto.fromAccountId) >> fromAccount
-        accountDao.fetchOneById(transactionDto.toAccountId) >> toAccount
         subject.create(transactionDto)
 
         then:
         1 * transactionLock.tryLockAccounts(transactionDto)
-        1 * transactionDao.insert(transactionPojo)
+        1 * transactions.create(transactionPojo)
 
         1 * fromAccount.setBalance(fromAccountBalance - transactionDto.amount)
         1 * toAccount.setBalance(toAccountBalance + transactionDto.amount)
 
-        1 * accountDao.update(fromAccount)
-        1 * accountDao.update(toAccount)
+        1 * accounts.update(fromAccount)
+        1 * accounts.update(toAccount)
 
         1 * transactionLock.unlockAccounts(transactionDto)
 

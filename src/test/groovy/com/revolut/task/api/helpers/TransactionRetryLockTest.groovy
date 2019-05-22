@@ -1,10 +1,10 @@
-package com.revolut.task.api.services
+package com.revolut.task.api.helpers
 
 import com.revolut.task.api.dto.TransactionDto
 import spock.lang.Specification
 
-class TransactionLockTest extends Specification {
-    TransactionLock subject = new TransactionLock()
+class TransactionRetryLockTest extends Specification {
+    TransactionRetryLock subject = new TransactionRetryLock()
 
     def "should not lock account twice"() {
         given:
@@ -43,4 +43,5 @@ class TransactionLockTest extends Specification {
 
         then:
         subject.currentTransactions.size() == 2
-    }}
+    }
+}
