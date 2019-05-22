@@ -4,7 +4,6 @@ import com.google.inject.Inject;
 import com.revolut.task.api.dto.AccountDto;
 import com.revolut.task.api.services.AccountService;
 import com.sun.jersey.api.NotFoundException;
-import com.sun.jersey.core.impl.provider.entity.StringProvider;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;

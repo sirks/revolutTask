@@ -23,11 +23,18 @@ import static java.lang.String.format;
 public class TransactionService {
     private final static Logger LOG = Logger.getLogger("TransactionService");
 
+    private final TransactionLock transactionLock;
     private final TransactionDao transactionDao;
     private final AccountDao accountDao;
 
     @Inject
-    public TransactionService(DbConfig dbConfig, TransactionDao transactionDao, AccountDao accountDao) {
+    public TransactionService(
+            TransactionLock transactionLock,
+            DbConfig dbConfig,
+            TransactionDao transactionDao,
+            AccountDao accountDao
+    ) {
+        this.transactionLock = transactionLock;
         this.transactionDao = transactionDao;
         this.transactionDao.setConfiguration(dbConfig.configuration());
         this.accountDao = accountDao;
@@ -39,36 +46,44 @@ public class TransactionService {
     }
 
     public Integer create(TransactionDto transaction) {
-        /** TODO make this atomic. Probably should use some message queue or streaming service like kafka.
-         ** jooq transactions doesn't work with jooq daos. have to go all sql... nice...
-         ** jooq generated daos does not support async methods... so 2010...
-         **/
+        /* TODO make this atomic.
+          jooq transactions doesn't work with jooq daos. have to go all sql...
+          jooq generated daos does not support async methods...
+
+          Should use message queue or streaming service like kafka.
+          Current implementation does not support multiple server instances.
+         */
 
         validate(transaction);
+        transactionLock.tryLockAccounts(transaction);
 
-        Iterator<Account> accounts = Stream.of(
-                CompletableFuture.supplyAsync(() -> accountDao.fetchOneById(transaction.fromAccountId)),
-                CompletableFuture.supplyAsync(() -> accountDao.fetchOneById(transaction.toAccountId))
-        )
-                .map(CompletableFuture::join)
-                .iterator();
+        try {
+            Iterator<Account> accounts = Stream.of(
+                    CompletableFuture.supplyAsync(() -> accountDao.fetchOneById(transaction.fromAccountId)),
+                    CompletableFuture.supplyAsync(() -> accountDao.fetchOneById(transaction.toAccountId))
+            )
+                    .map(CompletableFuture::join)
+                    .iterator();
 
-        Account fromAccount = accounts.next();
-        Account toAccount = accounts.next();
-        validate(transaction, fromAccount, toAccount);
+            Account fromAccount = accounts.next();
+            Account toAccount = accounts.next();
+            validate(transaction, fromAccount, toAccount);
 
-        Transaction pojo = transaction.pojo();
-        pojo.setId(null);
+            Transaction pojo = transaction.pojo();
+            pojo.setId(null);
 
-        transactionDao.insert(pojo);
-        fromAccount.setBalance(fromAccount.getBalance().subtract(pojo.getAmount()));
-        toAccount.setBalance(toAccount.getBalance().add(pojo.getAmount()));
+            transactionDao.insert(pojo);
+            fromAccount.setBalance(fromAccount.getBalance().subtract(pojo.getAmount()));
+            toAccount.setBalance(toAccount.getBalance().add(pojo.getAmount()));
 
-        CompletableFuture.allOf(
-                CompletableFuture.runAsync(() -> accountDao.update(fromAccount)),
-                CompletableFuture.runAsync(() -> accountDao.update(toAccount))
-        ).join();
-        return pojo.getId();
+            CompletableFuture.allOf(
+                    CompletableFuture.runAsync(() -> accountDao.update(fromAccount)),
+                    CompletableFuture.runAsync(() -> accountDao.update(toAccount))
+            ).join();
+            return pojo.getId();
+        } finally {
+            transactionLock.unlockAccounts(transaction);
+        }
     }
 
     private void validate(TransactionDto transaction) {

@@ -16,5 +16,3 @@ Run: `gradle clean build`
 
 To start the app from command line:  
 `java -jar build/libs/revolutTask-1.0-SNAPSHOT-all.jar`
-
-p.s.Some transaction concurrency issues not implemented.

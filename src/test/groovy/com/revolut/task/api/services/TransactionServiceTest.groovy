@@ -9,9 +9,10 @@ import com.revolut.task.tables.pojos.Transaction
 import spock.lang.Specification
 
 class TransactionServiceTest extends Specification {
+    TransactionLock transactionLock = Mock()
     TransactionDao transactionDao = Mock()
     AccountDao accountDao = Mock()
-    TransactionService subject = new TransactionService(Mock(DbConfig), transactionDao, accountDao)
+    TransactionService subject = new TransactionService(transactionLock, Mock(DbConfig), transactionDao, accountDao)
     TransactionDto transactionDto
 
     void setup() {
@@ -46,6 +47,7 @@ class TransactionServiceTest extends Specification {
         subject.create(transactionDto)
 
         then:
+        0 * _
         thrown RuntimeException
     }
 
@@ -72,6 +74,17 @@ class TransactionServiceTest extends Specification {
         thrown RuntimeException
     }
 
+    def "should fail if accounts locked"() {
+        given:
+        transactionLock.tryLockAccounts(transactionDto) >> { throw new RuntimeException() }
+
+        when:
+        subject.create(transactionDto)
+
+        then:
+        thrown RuntimeException
+    }
+
     def "should fail on not enough balance"() {
         when:
         transactionDto.amount = 99
@@ -84,6 +97,7 @@ class TransactionServiceTest extends Specification {
         subject.create(transactionDto)
 
         then:
+        1 * transactionLock.tryLockAccounts(transactionDto)
         thrown RuntimeException
     }
 
@@ -108,16 +122,16 @@ class TransactionServiceTest extends Specification {
         subject.create(transactionDto)
 
         then:
+        1 * transactionLock.tryLockAccounts(transactionDto)
         1 * transactionDao.insert(transactionPojo)
 
-//        TODO check out why ordering not working
-//        then:
         1 * fromAccount.setBalance(fromAccountBalance - transactionDto.amount)
         1 * toAccount.setBalance(toAccountBalance + transactionDto.amount)
 
-//        then:
         1 * accountDao.update(fromAccount)
         1 * accountDao.update(toAccount)
+
+        1 * transactionLock.unlockAccounts(transactionDto)
 
 //        then:
 //        0 * _

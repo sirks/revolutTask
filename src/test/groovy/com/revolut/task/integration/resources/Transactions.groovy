@@ -5,7 +5,6 @@ import com.revolut.task.api.dto.TransactionDto
 import com.revolut.task.integration.AccountHelper
 import com.revolut.task.integration.MockServer
 import com.revolut.task.integration.TransactionHelper
-import spock.lang.Ignore
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -100,9 +99,7 @@ class Transactions extends Specification {
     }
 
 
-//    TODO not implemented yet
-    @Ignore
-    def "should fill concurrent transactions"() {
+    def "should fill all competing concurrent transaction"() {
         given:
         def transactionAmount = BigDecimal.valueOf(10)
         def accountInitialBalance = BigDecimal.valueOf(20)

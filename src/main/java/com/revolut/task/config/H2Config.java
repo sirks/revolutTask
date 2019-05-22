@@ -14,7 +14,6 @@ import static org.jooq.SQLDialect.H2;
 
 @Singleton
 public class H2Config implements DbConfig {
-//    private static final String URL = "jdbc:h2:mem:revolut";
     private final Configuration configuration;
 
     @Inject
